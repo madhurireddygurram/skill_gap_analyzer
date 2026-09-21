@@ -82,25 +82,34 @@ def delete_account(email):
     return True, "Account deleted."
 
 def get_user(email):
-    return _load().get(email)
+    if not email:
+        return {}
+    return _load().get(email) or {}
 
 def update_user(email, data):
     users = _load()
-    users[email].update(data)
-    _save(users)
+    if email in users:
+        users[email].update(data)
+        _save(users)
 
 def require_login():
     import streamlit as st
+    users = _load()
     # Restore session from query param on refresh
-    if not st.session_state.get("user"):
-        email = st.query_params.get("session", "")
-        if email:
-            users = _load()
-            if email in users:
-                st.session_state.user  = users[email]
-                st.session_state.email = email
     if not st.session_state.get("user") or not st.session_state.get("email"):
+        email = st.query_params.get("session", "")
+        if email and email in users:
+            st.session_state.user  = users[email]
+            st.session_state.email = email
+        elif email:
+            st.query_params.clear()
+
+    email = st.session_state.get("email")
+    if not st.session_state.get("user") or not email or email not in users:
+        st.session_state.clear()
+        st.query_params.clear()
         st.switch_page("pages/1_Login.py")
         st.stop()
+
     # Keep session param in URL so refresh works
     st.query_params["session"] = st.session_state.email

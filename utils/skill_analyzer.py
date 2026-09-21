@@ -4,6 +4,7 @@ Intelligent skill gap analysis engine.
 Uses weighted role requirements, fuzzy similarity matching,
 and skill importance tiers to produce accurate gap reports.
 """
+from __future__ import annotations
 
 from difflib import SequenceMatcher
 
